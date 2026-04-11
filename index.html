@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>æ¥å ±ã»å¤æ ç®¡ç</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============================================================
+   CSS Variables & Reset
+   ============================================================ */
+:root {
+  --bg: #f5f3ef;
+  --surface: #ffffff;
+  --accent: #6b5c4e;
+  --accent-light: #8a7b6d;
+  --accent-bg: #e8e3dc;
+  --text: #3a3530;
+  --text-muted: #8a8279;
+  --border: #ddd7cf;
+  --success: #5a8a5e;
+  --danger: #a05a5a;
+  --warning: #b8944a;
+  --radius: 12px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+  min-height: 100dvh;
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ============================================================
+   Header & Navigation
+   ============================================================ */
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.header h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+.date-nav button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.date-nav button:hover { background: var(--accent-bg); }
+.date-nav .current-date {
+  font-size: 1rem;
+  font-weight: 500;
+  min-width: 140px;
+  text-align: center;
+}
+
+/* ============================================================
+   Tabs
+   ============================================================ */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--accent-bg);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: var(--accent-light);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent-light); }
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+}
+.btn-outline:hover:not(:disabled) { background: var(--accent-bg); }
+.btn-success {
+  background: var(--success);
+  color: #fff;
+}
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-warning {
+  background: var(--warning);
+  color: #fff;
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+.btn-full { width: 100%; }
+.btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   Work Type Selector
+   ============================================================ */
+.work-type-selector {
+  display: flex;
+  gap: 12px;
+}
+.work-type-btn {
+  flex: 1;
+  padding: 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.work-type-btn:hover { border-color: var(--accent-light); }
+.work-type-btn.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.work-type-btn .icon { font-size: 1.5rem; margin-bottom: 4px; }
+.work-type-btn .label { font-size: 0.85rem; font-weight: 500; }
+
+/* ============================================================
+   Time Display
+   ============================================================ */
+.time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.time-item {
+  text-align: center;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+.time-item .label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.time-item .value {
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.time-item .value.empty { color: var(--text-muted); }
+
+/* ============================================================
+   Attendance Summary
+   ============================================================ */
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.summary-row:last-child { border: none; }
+.summary-label { color: var(--text-muted); }
+.summary-value { font-weight: 600; }
+
+/* ============================================================
+   Task List (Daily Report)
+   ============================================================ */
+.task-section { margin-bottom: 16px; }
+.task-section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.task-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.task-input-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.task-input-row input:focus { border-color: var(--accent); }
+
+.task-list { list-style: none; }
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.task-item:last-child { border: none; }
+.task-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.task-item .task-text {
+  flex: 1;
+  font-size: 0.9rem;
+}
+.task-item .task-text.done {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+.task-item .badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  background: var(--warning);
+  color: #fff;
+  flex-shrink: 0;
+}
+.task-item .delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.task-item .delete-btn:hover { color: var(--danger); }
+
+/* ============================================================
+   Report Preview
+   ============================================================ */
+.report-box {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  line-height: 1.7;
+  min-height: 80px;
+  color: var(--text);
+}
+.report-box.empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ============================================================
+   Time Edit Modal
+   ============================================================ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.modal h3 {
+  font-size: 1rem;
+  margin-bottom: 16px;
+  color: var(--accent);
+}
+.modal label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.modal input[type="time"],
+.modal input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+.modal input:focus { border-color: var(--accent); }
+.modal .btn-group {
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+/* ============================================================
+   Status / Toast
+   ============================================================ */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 16px;
+  padding-bottom: calc(8px + var(--safe-bottom));
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  z-index: 50;
+}
+.status-bar.show { transform: translateY(0); }
+.status-bar.success { background: var(--success); color: #fff; }
+.status-bar.error { background: var(--danger); color: #fff; }
+
+/* ============================================================
+   Note Input
+   ============================================================ */
+.note-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.note-input:focus { border-color: var(--accent); }
+
+/* ============================================================
+   Loading Spinner
+   ============================================================ */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 480px) {
+  .container { padding: 12px; }
+  .card { padding: 16px; }
+  .time-item .value { font-size: 1.1rem; }
+  .btn { padding: 10px 14px; font-size: 0.85rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>æ¥å ±ã»å¤æ ç®¡ç</h1>
+    <div class="date-nav">
+      <button onclick="changeDate(-1)">â</button>
+      <span class="current-date" id="currentDate"></span>
+      <button onclick="changeDate(1)">â¶</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('attendance')">å¤æ </button>
+    <button class="tab-btn" onclick="switchTab('report')">æ¥å ±</button>
+  </div>
+
+  <!-- ========== ATTENDANCE TAB ========== -->
+  <div id="tab-attendance">
+
+    <!-- Work Type Selection -->
+    <div class="card" id="workTypeCard">
+      <div class="card-title">æ¥­åç¨®å¥</div>
+      <div class="work-type-selector">
+        <div class="work-type-btn" onclick="selectWorkType('kumon')" id="btn-kumon">
+          <div class="icon">ð</div>
+          <div class="label">Kumonã®æ¥</div>
+        </div>
+        <div class="work-type-btn" onclick="selectWorkType('other')" id="btn-other">
+          <div class="icon">ð¼</div>
+          <div class="label">ãã®ä»</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Stamps -->
+    <div class="card">
+      <div class="card-title">æå»</div>
+      <div class="time-grid">
+        <div class="time-item">
+          <div class="label">æ¥­åéå§</div>
+          <div class="value" id="startTime">--:--</div>
+        </div>
+        <div class="time-item">
+          <div class="label">æ¥åçµäº</div>
+          <div class="value" id="endTime">--:--</div>
+        </div>
+        <div class="time-item">
+          <div class="label">ä¼æ©éå§</div>
+          <div class="value" id="breakStart">--:--</div>
+        </div>
+        <div class="time-item">
+          <div class="label">ä¼æ©çµäº</div>
+          <div class="value" id="breakEnd">--:--</div>
+        </div>
+      </div>
+      <div class="btn-group" id="stampButtons">
+        <button class="btn btn-primary" id="btnClockIn" onclick="clockIn()">æ¥­åéå§</button>
+        <button class="btn btn-outline" id="btnBreakStart" onclick="breakStartFn()" disabled>ä¼æ©éå§</button>
+        <button class="btn btn-outline" id="btnBreakEnd" onclick="breakEndFn()" disabled>ä¼æ©çµäº</button>
+        <button class="btn btn-danger" id="btnClockOut" onclick="clockOut()" disabled>æ¥åçµäº</button>
+      </div>
+      <div style="margin-top: 12px;">
+        <button class="btn btn-outline btn-sm" onclick="openEditModal()">â± æå»ãä¿®æ­£</button>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card" id="summaryCard" style="display:none;">
+      <div class="card-title">å¤åãµããªã¼</div>
+      <div class="summary-row">
+        <span class="summary-label">æ¥­åç¨®å¥</span>
+        <span class="summary-value" id="summaryWorkType">-</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">å¤åæé</span>
+        <span class="summary-value" id="summaryWorkHours">-</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">ä¼æ©æé</span>
+        <span class="summary-value" id="summaryBreak">-</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">å®åæé</span>
+        <span class="summary-value" id="summaryActual">-</span>
+      </div>
+    </div>
+
+    <!-- Note -->
+    <div class="card">
+      <div class="card-title">åè</div>
+      <textarea class="note-input" id="attendanceNote" placeholder="åèãããã°å¥å..." oninput="debounceSaveAttendance()"></textarea>
+    </div>
+  </div>
+
+  <!-- ========== DAILY REPORT TAB ========== -->
+  <div id="tab-report" style="display:none;">
+
+    <!-- AM Tasks -->
+    <div class="card">
+      <div class="task-section">
+        <div class="task-section-title">ð ååã®ã¿ã¹ã¯</div>
+        <div class="task-input-row">
+          <input type="text" id="amTaskInput" placeholder="ã¿ã¹ã¯ãå¥å..." onkeydown="if(event.key==='Enter')addTask('am')">
+          <button class="btn btn-primary btn-sm" onclick="addTask('am')">è¿½å </button>
+        </div>
+        <ul class="task-list" id="amTaskList"></ul>
+      </div>
+    </div>
+
+    <!-- PM Tasks -->
+    <div class="card">
+      <div class="task-section">
+        <div class="task-section-title">ð åå¾ã®ã¿ã¹ã¯</div>
+        <div class="task-input-row">
+          <input type="text" id="pmTaskInput" placeholder="ã¿ã¹ã¯ãå¥å..." onkeydown="if(event.key==='Enter')addTask('pm')">
+          <button class="btn btn-primary btn-sm" onclick="addTask('pm')">è¿½å </button>
+        </div>
+        <ul class="task-list" id="pmTaskList"></ul>
+      </div>
+    </div>
+
+    <!-- Report Generation -->
+    <div class="card">
+      <div class="card-title">æ¥å ±</div>
+      <div class="btn-group" style="margin-bottom: 12px;">
+        <button class="btn btn-primary" onclick="generateReport()" id="btnGenReport">
+          â¨ AIã§æ¥å ±çæ
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="saveReport()">ð¾ ä¿å­</button>
+      </div>
+      <div class="report-box empty" id="reportPreview">æ¥å ±ãçæããã«ã¯ã¿ã¹ã¯ãå¥åãã¦ãAIã§æ¥å ±çæããã¯ãªãã¯ãã¦ãã ãã</div>
+    </div>
+
+    <!-- Carryover -->
+    <div class="card" id="carryoverCard" style="display:none;">
+      <div class="card-title">ð ç¹°è¶ã¿ã¹ã¯</div>
+      <div id="carryoverList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Time Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>æå»æå»ã®ä¿®æ­£</h3>
+    <label>æ¥­åéå§</label>
+    <input type="time" id="editStartTime">
+    <label>æ¥­åçµäº</label>
+    <input type="time" id="editEndTime">
+    <label>ä¼æ©æéï¼åï¼</label>
+    <input type="number" id="editBreakMin" min="0" max="480" value="0">
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="closeEditModal()">ã­ã£ã³ã»ã«</button>
+      <button class="btn btn-primary" onclick="saveEditModal()">ä¿å­</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div class="status-bar" id="statusBar"></div>
+
+<script>
+/* =============================================================
+   Supabase Configuration
+   =============================================================
+   â¼â¼â¼ ããã«ããªãã®Supabaseæå ±ãå¥åãã¦ãã ãã â¼â¼â¼
+
+   â ï¸ ã»ã­ã¥ãªãã£æ³¨æ:
+   - SUPABASE_URL ã¨ SUPABASE_ANON_KEY ã¯ãã­ã³ãã¨ã³ãã«å¬éããã¾ã
+   - anon key ã¯ãå¬éç¨ã­ã¼ããªã®ã§ãRLSï¼Row Level Securityï¼ã§
+     ãã¼ãã«ã¸ã®ã¢ã¯ã»ã¹ãå¶éãã¦ãã ãã
+   - Claude API ã­ã¼ã¯çµ¶å¯¾ã«ããã«æ¸ããªãã§ãã ãã
+     â Supabase Edge Function å´ã§ç®¡çãã¾ã
+   ============================================================= */
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';      // ä¾: 'https://xxxxx.supabase.co'
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // ä¾: 'eyJhbGciOi...'
+
+/* Edge Function URL (æ¥å ±AEçæç¨) */
+const EDGE_FUNCTION_URL = SUPABASE_URL + '/functions/v1/generate-report';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* =============================================================
+   State
+   ============================================================= */
+let currentDate = new Date();
+let attendance = null;   // Current day's attendance record
+let amTasks = [];        // [{text, done, carryover}]
+let pmTasks = [];
+let reportText = '';
+let carryoverText = '';
+let saveTimeout = null;
+
+/* =============================================================
+   Initialization
+   ============================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  renderDate();
+  loadDay();
+});
+
+/* =============================================================
+   Date Navigation
+   ============================================================= */
+function formatDate(d) {
+  return d.toISOString().split('T')[0];
+}
+function formatDateDisplay(d) {
+  const days = ['æ¥','æ','ç«','æ°´','æ¨','é','å'];
+  return `${d.getMonth()+1}/${d.getDate()}(${days[d.getDay()]})`;
+}
+function renderDate() {
+  document.getElementById('currentDate').textContent = formatDateDisplay(currentDate);
+}
+function changeDate(delta) {
+  currentDate.setDate(currentDate.getDate() + delta);
+  renderDate();
+  loadDay();
+}
+
+/* =============================================================
+   Tab Switching
+   ============================================================= */
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-attendance').style.display = tab === 'attendance' ? '' : 'none';
+  document.getElementById('tab-report').style.display = tab === 'report' ? '' : 'none';
+  event.target.classList.add('active');
+}
+
+/* =============================================================
+   Load Day Data
+   ============================================================= */
+async function loadDay() {
+  const dateStr = formatDate(currentDate);
+  await Promise.all([loadAttendance(dateStr), loadReport(dateStr)]);
+}
+
+/* ----- Attendance ----- */
+async function loadAttendance(dateStr) {
+  const { data, error } = await supabase
+    .from('attendance')
+    .select('*')
+    .eq('date', dateStr)
+    .maybeSingle();
+
+  if (error) {
+    showStatus('å¤æ ãã¼ã¿ã®èª­ã¿è¾¼ã¿ã«å¤±æãã¾ãã', 'error');
+    return;
+  }
+
+  attendance = data;
+  renderAttendance();
+}
+
+function renderAttendance() {
+  const startEl = document.getElementById('startTime');
+  const endEl = document.getElementById('endTime');
+  const breakStartEl = document.getElementById('breakStart');
+  const breakEndEl = document.getElementById('breakEnd');
+  const noteEl = document.getElementById('attendanceNote');
+
+  // Reset
+  startEl.textContent = '--:--';
+  endEl.textContent = '--:--';
+  breakStartEl.textContent = '--:--';
+  breakEndEl.textContent = '--:--';
+  [startEl, endEl, breakStartEl, breakEndEl].forEach(el => el.classList.add('empty'));
+  noteEl.value = '';
+
+  // Reset work type buttons
+  document.getElementById('btn-kumon').classList.remove('selected');
+  document.getElementById('btn-other').classList.remove('selected');
+
+  // Reset stamp buttons
+  document.getElementById('btnClockIn').disabled = false;
+  document.getElementById('btnBreakStart').disabled = true;
+  document.getElementById('btnBreakEnd').disabled = true;
+  document.getElementById('btnClockOut').disabled = true;
+  document.getElementById('summaryCard').style.display = 'none';
+
+  if (!attendance) return;
+
+  // Work type
+  if (attendance.work_type === 'kumon') {
+    document.getElementById('btn-kumon').classList.add('selected');
+  } else if (attendance.work_type === 'other') {
+    document.getElementById('btn-other').classList.add('selected');
+  }
+
+  // Times
+  if (attendance.start_time) {
+    const t = new Date(attendance.start_time);
+    startEl.textContent = timeStr(t);
+    startEl.classList.remove('empty');
+    document.getElementById('btnClockIn').disabled = true;
+    document.getElementById('btnBreakStart').disabled = false;
+    document.getElementById('btnClockOut').disabled = false;
+  }
+  if (attendance.end_time) {
+    const t = new Date(attendance.end_time);
+    endEl.textContent = timeStr(t);
+    endEl.classList.remove('empty');
+    document.getElementById('btnClockOut').disabled = true;
+    document.getElementById('btnBreakStart').disabled = true;
+    document.getElementById('btnBreakEnd').disabled = true;
+    updateSummary();
+  }
+  if (attendance.break_minutes != null && attendance.break_minutes > 0) {
+    // Display break info if we have start_time to calculate from
+    if (attendance.start_time) {
+      const breakMin = attendance.break_minutes;
+      // We store break as minutes; show as a range if we have specific times
+      // For simplicity, show total break minutes
+      breakStartEl.textContent = breakMin + 'å';
+      breakStartEl.classList.remove('empty');
+    }
+  }
+
+  noteEl.value = attendance.note || '';
+}
+
+function timeStr(d) {
+  return d.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+/* ----- Daily Report ----- */
+async function loadReport(dateStr) {
+  const { data, error } = await supabase
+    .from('daily_report')
+    .select('*')
+    .eq('date', dateStr)
+    .maybeSingle();
+
+  if (error) {
+    showStatus('æ¥å ±ãã¼ã¿ã®èª­ã¿è¾¼ã¿ã«å¤±æãã¾ãã', 'error');
+    return;
+  }
+
+  amTasks = [];
+  pmTasks = [];
+  reportText = '';
+  carryoverText = '';
+
+  if (data) {
+    amTasks = parseTasks(data.am_tasks);
+    pmTasks = parseTasks(data.pm_tasks);
+    reportText = buildReportFromSummaries(data.am_summary, data.pm_summary);
+    carryoverText = data.carryover || '';
+  }
+
+  // Check for carryover from previous day
+  await loadCarryover(dateStr);
+
+  renderTasks();
+  renderReport();
+}
+
+function parseTasks(str) {
+  if (!str) return [];
+  try {
+    return JSON.parse(str);
+  } catch {
+    // Fallback: treat as newline-separated text
+    return str.split('\n').filter(s => s.trim()).map(s => ({
+      text: s.replace(/^[\-\s\[x\]]+/i, '').trim(),
+      done: /^\[x\]/i.test(s.trim()),
+      carryover: false
+    }));
+  }
+}
+
+function buildReportFromSummaries(am, pm) {
+  let parts = [];
+  if (am) parts.push('ãååã\n' + am);
+  if (pm) parts.push('ãåå¾ã\n' + pm);
+  return parts.join('\n\n') || '';
+}
+
+async function loadCarryover(dateStr) {
+  // Get previous day
+  const prev = new Date(dateStr);
+  prev.setDate(prev.getDate() - 1);
+  const prevStr = formatDate(prev);
+
+  const { data } = await supabase
+    .from('daily_report')
+    .select('am_tasks, pm_tasks')
+    .eq('date', prevStr)
+    .maybeSingle();
+
+  if (!data) return;
+
+  const prevAm = parseTasks(data.am_tasks);
+  const prevPm = parseTasks(data.pm_tasks);
+  const incomplete = [...prevAm, ...prevPm].filter(t => !t.done);
+
+  if (incomplete.length === 0) {
+    document.getElementById('carryoverCard').style.display = 'none';
+    return;
+  }
+
+  // Show carryover card
+  document.getElementById('carryoverCard').style.display = '';
+  const list = document.getElementById('carryoverList');
+  list.innerHTML = '';
+
+  incomplete.forEach(t => {
+    // Add to AM tasks if not already there
+    const exists = amTasks.some(at => at.text === t.text && at.carryover);
+    if (!exists) {
+      // Don't auto-add; let user click to add
+    }
+    const div = document.createElement('div');
+    div.className = 'task-item';
+    div.innerHTML = `
+      <span class="badge">ç¹°è¶</span>
+      <span class="task-text">${escapeHtml(t.text)}</span>
+      <button class="btn btn-sm btn-outline" onclick="addCarryoverTask('${escapeHtml(t.text)}')">è¿½å </button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function addCarryoverTask(text) {
+  amTasks.push({ text, done: false, carryover: true });
+  renderTasks();
+  debounceSaveReport();
+  showStatus('ç¹°è¶ã¿ã¹ã¯ãè¿½å ãã¾ãã', 'success');
+}
+
+/* =============================================================
+   Attendance Actions
+   ============================================================= */
+function selectWorkType(type) {
+  document.getElementById('btn-kumon').classList.toggle('selected', type === 'kumon');
+  document.getElementById('btn-other').classList.toggle('selected', type === 'other');
+
+  if (!attendance) {
+    attendance = { work_type: type };
+  } else {
+    attendance.work_type = type;
+  }
+}
+
+async function clockIn() {
+  const now = new Date();
+  const dateStr = formatDate(currentDate);
+  const workType = attendance?.work_type || 'other';
+
+  // Auto-set end time based on work type
+  const autoEnd = new Date(currentDate);
+  if (workType === 'kumon') {
+    autoEnd.setHours(12, 0, 0, 0);
+  } else {
+    autoEnd.setHours(17, 30, 0, 0);
+  }
+
+  const record = {
+    date: dateStr,
+    work_type: workType,
+    start_time: now.toISOString(),
+    end_time: autoEnd.toISOString(),
+    break_minutes: 0,
+    note: ''
+  };
+
+  const { data, error } = await supabase
+    .from('attendance')
+    .upsert(record, { onConflict: 'date' })
+    .select()
+    .single();
+
+  if (error) {
+    // Try insert if upsert fails
+    const { data: d2, error: e2 } = await supabase
+      .from('attendance')
+      .insert(record)
+      .select()
+      .single();
+    if (e2) {
+      showStatus('æå»ã«å¤±æãã¾ãã: ' + e2.message, 'error');
+      return;
+    }
+    attendance = d2;
+  } else {
+    attendance = data;
+  }
+
+  renderAttendance();
+  showStatus('æ¥åéå§ãè¨é²ãã¾ãã', 'success');
+}
+
+async function breakStartFn() {
+  if (!attendance) return;
+  // Store break start time temporarily in memory
+  attendance._breakStart = new Date();
+  document.getElementById('breakStart').textContent = timeStr(attendance._breakStart);
+  document.getElementById('breakStart').classList.remove('empty');
+  document.getElementById('btnBreakStart').disabled = true;
+  document.getElementById('btnBreakEnd').disabled = false;
+  showStatus('ä¼æ©éå§ãè¨é²ãã¾ãã', 'success');
+}
+
+async function breakEndFn() {
+  if (!attendance || !attendance._breakStart) return;
+  const now = new Date();
+  const breakMin = Math.round((now - attendance._breakStart) / 60000);
+  attendance.break_minutes = (attendance.break_minutes || 0) + breakMin;
+
+  document.getElementById('breakEnd').textContent = timeStr(now);
+  document.getElementById('breakEnd').classList.remove('empty');
+  document.getElementById('btnBreakEnd').disabled = true;
+  document.getElementById('btnBreakStart').disabled = false;
+
+  await saveAttendance();
+  showStatus(`ä¼æ©çµäºï¼${breakMin}åï¼`, 'success');
+}
+
+async function clockOut() {
+  if (!attendance) return;
+  const now = new Date();
+  attendance.end_time = now.toISOString();
+
+  // Auto break deduction: 6h+ work = at least 60 min break
+  const start = new Date(attendance.start_time);
+  const totalMin = (now - start) / 60000;
+  if (totalMin >= 360 && (attendance.break_minutes || 0) < 60) {
+    attendance.break_minutes = 60;
+  }
+
+  await saveAttendance();
+  renderAttendance();
+  showStatus('æ¥­åçµäºãè¨é²ãã¾ãã', 'success');
+}
+
+async function saveAttendance() {
+  if (!attendance || !attendance.date) {
+    if (!attendance) attendance = {};
+    attendance.date = formatDate(currentDate);
+  }
+
+  const record = {
+    date: attendance.date,
+    work_type: attendance.work_type || 'other',
+    start_time: attendance.start_time || null,
+    end_time: attendance.end_time || null,
+    break_minutes: attendance.break_minutes || 0,
+    note: document.getElementById('attendanceNote').value || ''
+  };
+
+  if (attendance.id) {
+    const { error } = await supabase
+      .from('attendance')
+      .update(record)
+     ..eq('id', attendance.id);
+    if (error) showStatus('ä¿å­ã«å¤±æãã¾ãã', 'error');
+  } else {
+    const { data, error } = await supabase
+      .from('attendance')
+      .insert(record)
+      .select()
+      .single();
+    if (error) {
+      showStatus('ä¿å­ã«å¤±æãã¾ãã: ' + error.message, 'error');
+    } else {
+      attendance = data;
+    }
+  }
+}
+
+function debounceSaveAttendance() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => saveAttendance(), 1000);
+}
+
+function updateSummary() {
+  if (!attendance || !attendance.start_time || !attendance.end_time) return;
+
+  document.getElementById('summaryCard').style.display = '';
+  const start = new Date(attendance.start_time);
+  const end = new Date(attendance.end_time);
+  const breakMin = attendance.break_minutes || 0;
+  const totalMin = Math.round((end - start) / 60000);
+  const actualMin = totalMin - breakMin;
+
+  document.getElementById('summaryWorkType').textContent =
+    attendance.work_type === 'kumon' ? 'Kumonã®æ¥' : 'ãã®ä»';
+  document.getElementById('summaryWorkHours').textContent = formatMinutes(totalMin);
+  document.getElementById('summaryBreak').textContent = formatMinutes(breakMin);
+  document.getElementById('summaryActual').textContent = formatMinutes(actualMin);
+}
+
+function formatMinutes(min) {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}æé${m > 0 ? m + 'å' : ''}`;
+}
+
+/* =============================================================
+   Time Edit Modal
+   ============================================================= */
+function openEditModal() {
+  const modal = document.getElementById('editModal');
+  modal.classList.add('show');
+
+  if (attendance?.start_time) {
+    const t = new Date(attendance.start_time);
+    document.getElementById('editStartTime').value =
+      t.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+  if (attendance?.end_time) {
+    const t = new Date(attendance.end_time);
+    document.getElementById('editEndTime').value =
+      t.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+  document.getElementById('editBreakMin').value = attendance?.break_minutes || 0;
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('show');
+}
+
+async function saveEditModal() {
+  const startVal = document.getElementById('editStartTime').value;
+  const endVal = document.getElementById('editEndTime').value;
+  const breakMin = parseInt(document.getElementById('editBreakMin').value) || 0;
+
+  if (!attendance) attendance = { date: formatDate(currentDate), work_type: 'other' };
+
+  if (startVal) {
+    const [h, m] = startVal.split(':');
+    const d = new Date(currentDate);
+    d.setHours(parseInt(h), parseInt(m), 0, 0);
+    attendance.start_time = d.toISOString();
+  }
+  if (endVal) {
+    const [h, m] = endVal.split(':');
+    const d = new Date(currentDate);
+    d.setHours(parseInt(h), parseInt(m), 0, 0);
+    attendance.end_time = d.toISOString();
+  }
+  attendance.break_minutes = breakMin;
+
+  // Auto break deduction check
+  if (attendance.start_time && attendance.end_time) {
+    const totalMin = (new Date(attendance.end_time) - new Date(attendance.start_time)) / 60000;
+    if (totalMin >= 360 && breakMin < 60) {
+      attendance.break_minutes = 60;
+      document.getElementById('editBreakMin').value = 60;
+    }
+  }
+
+  await saveAttendance();
+  renderAttendance();
+  closeEditModal();
+  showStatus('æå»ãä¿®æ­£ãã¾ãã', 'success');
+}
+
+/* =============================================================
+   Task Management
+   ============================================================= */
+function addTask(period) {
+  const input = document.getElementById(period + 'TaskInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const tasks = period === 'am' ? amTasks : pmTasks;
+  tasks.push({ text, done: false, carryover: false });
+  input.value = '';
+
+  renderTasks();
+  debounceSaveReport();
+}
+
+function toggleTask(period, index) {
+  const tasks = period === 'am' ? amTasks : pmTasks;
+  tasks[index].done = !tasks[index].done;
+  renderTasks();
+  debounceSaveReport();
+}
+
+function removeTask(period, index) {
+  const tasks = period === 'am' ? amTasks : pmTasks;
+  tasks.splice(index, 1);
+  if (period === 'am') amTasks = tasks;
+  else pmTasks = tasks;
+  renderTasks();
+  debounceSaveReport();
+}
+
+function renderTasks() {
+  renderTaskList('am', amTasks);
+  renderTaskList('pm', pmTasks);
+}
+
+function renderTaskList(period, tasks) {
+  const list = document.getElementById(period + 'TaskList');
+  list.innerHTML = '';
+  tasks.forEach((t, i) => {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.innerHTML = `
+      <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask('${period}', ${i})">
+      <span class="task-text ${t.done ? 'done' : ''}">${escapeHtml(t.text)}</span>
+      ${t.carryover ? '<span class="badge">ç¹°è¶</span>' : ''}
+      <button class="delete-btn" onclick="removeTask('${period}', ${i})">Ã</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+/* =============================================================
+   Report Generation (via Supabase Edge Function)
+   ============================================================= */
+async function generateReport() {
+  const btn = document.getElementById('btnGenReport');
+  const preview = document.getElementById('reportPreview');
+
+  const completedAm = amTasks.filter(t => t.done).map(t => t.text);
+  const completedPm = pmTasks.filter(t => t.done).map(t => t.text);
+  const incompleteAm = amTasks.filter(t => !t.done).map(t => t.text);
+  const incompletePm = pmTasks.filter(t => !t.done).map(t => t.text);
+
+  if (completedAm.length === 0 && completedPm.length === 0) {
+    showStatus('å®äºã¿ã¹ã¯ãããã¾ãã', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> çæä¸­...';
+
+  try {
+    const res = await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({
+        date: formatDate(currentDate),
+        completed_am: completedAm,
+        completed_pm: completedPm,
+        incomplete_am: incompleteAm,
+        incomplete_pm: incompletePm,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Edge Function error: ' + res.status);
+    }
+
+    const result = await res.json();
+    reportText = result.report || '';
+    preview.textContent = reportText;
+    preview.classList.remove('empty');
+    showStatus('æ¥å ±ãçæãã¾ãã', 'success');
+  } catch (e) {
+    showStatus('æ¥å ±çæã«å¤±æãã¾ãã: ' + e.message, 'error');
+    // Fallback: generate simple template locally
+    reportText = generateLocalReport(completedAm, completedPm, incompleteAm, incompletePm);
+    preview.textContent = reportText;
+    preview.classList.remove('empty');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'â¨ AIã§æ¥å ±çæ';
+  }
+}
+
+function generateLocalReport(cAm, cPm, iAm, iPm) {
+  let report = `ãæ¥å ±ã${formatDateDisplay(currentDate)}\n\n`;
+  if (cAm.length > 0) {
+    report += 'â  ååã®å®ç¸¾\n';
+    cAm.forEach(t => report += `ã»${t}\n`);
+    report += '\n';
+  }
+  if (cPm.length > 0) {
+    report += 'â  åå¾ã®å®ç¸¾\n';
+    cPm.forEach(t => report += `ã»${t}\n`);
+    report += '\n';
+  }
+  const allIncomplete = [...iAm, ...iPm];
+  if (allIncomplete.length > 0) {
+    report += 'â  ç¿æ¥ã¸ã®ç¹°è¶\n';
+    allIncomplete.forEach(t => report += `ã»${t}\n`);
+  }
+  return report;
+}
+
+function renderReport() {
+  const preview = document.getElementById('reportPreview');
+  if (reportText) {
+    preview.textContent = reportText;
+    preview.classList.remove('empty');
+  } else {
+    preview.textContent = 'æ¥å ±ãçæããã«ã¯ã¿ã¹ã¯ãå¥åãã¦ãAIã§æ¥å ±çæããã¯ãªãã¯ãã¦ãã ãã';
+    preview.classList.add('empty');
+  }
+}
+
+/* =============================================================
+   Save Report
+   ============================================================= */
+async function saveReport() {
+  const dateStr = formatDate(currentDate);
+  const incomplete = [...amTasks.filter(t => !t.done), ...pmTasks.filter(t => !t.done)];
+
+  // Split report into am/pm summaries
+  let amSummary = '';
+  let pmSummary = '';
+  if (reportText) {
+    const parts = reportText.split(/ãåå¾ã/);
+    amSummary = parts[0]?.replace(/ãååã/, '').replace(/ãæ¥å ±ã.*\n\n?/, '').trim() || '';
+    pmSummary = parts[1]?.trim() || '';
+    // If the split didn't work well, just put everything in am
+    if (!pmSummary && !amSummary) {
+      amSummary = reportText;
+    }
+  }
+
+  const record = {
+    date: dateStr,
+    am_tasks: JSON.stringify(amTasks),
+    pm_tasks: JSON.stringify(pmTasks),
+    am_summary: amSummary,
+    pm_summary: pmSummary,
+    carryover: JSON.stringify(incomplete.map(t => t.text)),
+  };
+
+  // Check if record exists
+  const { data: existing } = await supabase
+    .from('daily_report')
+    .select('id')
+    .eq('date', dateStr)
+    .maybeSingle();
+
+  let error;
+  if (existing) {
+    ({ error } = await supabase
+      .from('daily_report')
+      .update(record)
+      .eq('id', existing.id));
+  } else {
+    ({ error } = await supabase
+      .from('daily_report')
+      .insert(record));
+  }
+
+  if (error) {
+    showStatus('æ¥å ±ã®ä¿å­ã«å¤±æãã¾ãã: ' + error.message, 'error');
+  } else {
+    showStatus('æ¥å ±ãä¿å­ãã¾ãã', 'success');
+  }
+}
+
+function debounceSaveReport() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => saveReport(), 2000);
+}
+
+/* =============================================================
+   Utilities
+   ============================================================= */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showStatus(msg, type) {
+  const bar = document.getElementById('statusBar');
+  bar.textContent = msg;
+  bar.className = 'status-bar show ' + type;
+  setTimeout(() => bar.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
