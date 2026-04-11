@@ -516,7 +516,7 @@ body {
           <div class="value" id="startTime">--:--</div>
         </div>
         <div class="time-item">
-          <div class="label">業務終了</div>
+          <div class="label">楴務終了</div>
           <div class="value" id="endTime">--:--</div>
         </div>
         <div class="time-item">
@@ -532,7 +532,7 @@ body {
         <button class="btn btn-primary" id="btnClockIn" onclick="clockIn()">業務開始</button>
         <button class="btn btn-outline" id="btnBreakStart" onclick="breakStartFn()" disabled>休憩開始</button>
         <button class="btn btn-outline" id="btnBreakEnd" onclick="breakEndFn()" disabled>休憩終了</button>
-        <button class="btn btn-danger" id="btnClockOut" onclick="clockOut()" disabled>業務終了</button>
+        <button class="btn btn-danger" id="btnClockOut" onclick="clockOut()" disabled>楴務終了</button>
       </div>
       <div style="margin-top: 12px;">
         <button class="btn btn-outline btn-sm" onclick="openEditModal()">⏱ 時刻を修正</button>
@@ -635,6 +635,7 @@ body {
 <div class="status-bar" id="statusBar"></div>
 
 <script>
+(function() {
 /* =============================================================
    Supabase Configuration
    =============================================================
@@ -1006,7 +1007,7 @@ async function clockOut() {
 
   await saveAttendance();
   renderAttendance();
-  showStatus('業務終了を記録しました', 'success');
+  showStatus('楴務終了を記録しました', 'success');
 }
 
 async function saveAttendance() {
@@ -1203,7 +1204,7 @@ async function generateReport() {
   }
 
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> 生成中...';
+  btn.innerHTML = '<span class="spinner"></span> 生成仭...';
 
   try {
     const res = await fetch(EDGE_FUNCTION_URL, {
@@ -1231,7 +1232,7 @@ async function generateReport() {
     preview.classList.remove('empty');
     showStatus('日報を生成しました', 'success');
   } catch (e) {
-    showStatus('日報生成に失敗しました: ' + e.message, 'error');
+    showStatus('日堰生成に失敗しました: ' + e.message, 'error');
     // Fallback: generate simple template locally
     reportText = generateLocalReport(completedAm, completedPm, incompleteAm, incompletePm);
     preview.textContent = reportText;
@@ -1348,6 +1349,7 @@ function showStatus(msg, type) {
   bar.className = 'status-bar show ' + type;
   setTimeout(() => bar.classList.remove('show'), 2500);
 }
+})();
 </script>
 </body>
 </html>
