@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>æ¥å ±ã»å¤æ ç®¡ç</title>
+<title>日報・勤怠管理</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ============================================================
@@ -475,18 +475,18 @@ body {
 <div class="container">
   <!-- Header -->
   <div class="header">
-    <h1>æ¥å ±ã»å¤æ ç®¡ç</h1>
+    <h1>日報・勤怠管理</h1>
     <div class="date-nav">
-      <button onclick="changeDate(-1)">â</button>
+      <button onclick="changeDate(-1)">◀</button>
       <span class="current-date" id="currentDate"></span>
-      <button onclick="changeDate(1)">â¶</button>
+      <button onclick="changeDate(1)">▶</button>
     </div>
   </div>
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('attendance')">å¤æ </button>
-    <button class="tab-btn" onclick="switchTab('report')">æ¥å ±</button>
+    <button class="tab-btn active" onclick="switchTab('attendance')">勤怠</button>
+    <button class="tab-btn" onclick="switchTab('report')">日報</button>
   </div>
 
   <!-- ========== ATTENDANCE TAB ========== -->
@@ -494,76 +494,76 @@ body {
 
     <!-- Work Type Selection -->
     <div class="card" id="workTypeCard">
-      <div class="card-title">æ¥­åç¨®å¥</div>
+      <div class="card-title">業務種別</div>
       <div class="work-type-selector">
         <div class="work-type-btn" onclick="selectWorkType('kumon')" id="btn-kumon">
-          <div class="icon">ð</div>
-          <div class="label">Kumonã®æ¥</div>
+          <div class="icon">📚</div>
+          <div class="label">Kumonの日</div>
         </div>
         <div class="work-type-btn" onclick="selectWorkType('other')" id="btn-other">
-          <div class="icon">ð¼</div>
-          <div class="label">ãã®ä»</div>
+          <div class="icon">💼</div>
+          <div class="label">その他</div>
         </div>
       </div>
     </div>
 
     <!-- Time Stamps -->
     <div class="card">
-      <div class="card-title">æå»</div>
+      <div class="card-title">打刻</div>
       <div class="time-grid">
         <div class="time-item">
-          <div class="label">æ¥­åéå§</div>
+          <div class="label">業務開始</div>
           <div class="value" id="startTime">--:--</div>
         </div>
         <div class="time-item">
-          <div class="label">æ¥åçµäº</div>
+          <div class="label">業務終了</div>
           <div class="value" id="endTime">--:--</div>
         </div>
         <div class="time-item">
-          <div class="label">ä¼æ©éå§</div>
+          <div class="label">休憩開始</div>
           <div class="value" id="breakStart">--:--</div>
         </div>
         <div class="time-item">
-          <div class="label">ä¼æ©çµäº</div>
+          <div class="label">休憩終了</div>
           <div class="value" id="breakEnd">--:--</div>
         </div>
       </div>
       <div class="btn-group" id="stampButtons">
-        <button class="btn btn-primary" id="btnClockIn" onclick="clockIn()">æ¥­åéå§</button>
-        <button class="btn btn-outline" id="btnBreakStart" onclick="breakStartFn()" disabled>ä¼æ©éå§</button>
-        <button class="btn btn-outline" id="btnBreakEnd" onclick="breakEndFn()" disabled>ä¼æ©çµäº</button>
-        <button class="btn btn-danger" id="btnClockOut" onclick="clockOut()" disabled>æ¥åçµäº</button>
+        <button class="btn btn-primary" id="btnClockIn" onclick="clockIn()">業務開始</button>
+        <button class="btn btn-outline" id="btnBreakStart" onclick="breakStartFn()" disabled>休憩開始</button>
+        <button class="btn btn-outline" id="btnBreakEnd" onclick="breakEndFn()" disabled>休憩終了</button>
+        <button class="btn btn-danger" id="btnClockOut" onclick="clockOut()" disabled>業務終了</button>
       </div>
       <div style="margin-top: 12px;">
-        <button class="btn btn-outline btn-sm" onclick="openEditModal()">â± æå»ãä¿®æ­£</button>
+        <button class="btn btn-outline btn-sm" onclick="openEditModal()">⏱ 時刻を修正</button>
       </div>
     </div>
 
     <!-- Summary -->
     <div class="card" id="summaryCard" style="display:none;">
-      <div class="card-title">å¤åãµããªã¼</div>
+      <div class="card-title">勤務サマリー</div>
       <div class="summary-row">
-        <span class="summary-label">æ¥­åç¨®å¥</span>
+        <span class="summary-label">業務種別</span>
         <span class="summary-value" id="summaryWorkType">-</span>
       </div>
       <div class="summary-row">
-        <span class="summary-label">å¤åæé</span>
+        <span class="summary-label">勤務時間</span>
         <span class="summary-value" id="summaryWorkHours">-</span>
       </div>
       <div class="summary-row">
-        <span class="summary-label">ä¼æ©æé</span>
+        <span class="summary-label">休憩時間</span>
         <span class="summary-value" id="summaryBreak">-</span>
       </div>
       <div class="summary-row">
-        <span class="summary-label">å®åæé</span>
+        <span class="summary-label">実働時間</span>
         <span class="summary-value" id="summaryActual">-</span>
       </div>
     </div>
 
     <!-- Note -->
     <div class="card">
-      <div class="card-title">åè</div>
-      <textarea class="note-input" id="attendanceNote" placeholder="åèãããã°å¥å..." oninput="debounceSaveAttendance()"></textarea>
+      <div class="card-title">備考</div>
+      <textarea class="note-input" id="attendanceNote" placeholder="備考があれば入力..." oninput="debounceSaveAttendance()"></textarea>
     </div>
   </div>
 
@@ -573,10 +573,10 @@ body {
     <!-- AM Tasks -->
     <div class="card">
       <div class="task-section">
-        <div class="task-section-title">ð ååã®ã¿ã¹ã¯</div>
+        <div class="task-section-title">🌅 午前のタスク</div>
         <div class="task-input-row">
-          <input type="text" id="amTaskInput" placeholder="ã¿ã¹ã¯ãå¥å..." onkeydown="if(event.key==='Enter')addTask('am')">
-          <button class="btn btn-primary btn-sm" onclick="addTask('am')">è¿½å </button>
+          <input type="text" id="amTaskInput" placeholder="タスクを入力..." onkeydown="if(event.key==='Enter')addTask('am')">
+          <button class="btn btn-primary btn-sm" onclick="addTask('am')">追加</button>
         </div>
         <ul class="task-list" id="amTaskList"></ul>
       </div>
@@ -585,10 +585,10 @@ body {
     <!-- PM Tasks -->
     <div class="card">
       <div class="task-section">
-        <div class="task-section-title">ð åå¾ã®ã¿ã¹ã¯</div>
+        <div class="task-section-title">🌇 午後のタスク</div>
         <div class="task-input-row">
-          <input type="text" id="pmTaskInput" placeholder="ã¿ã¹ã¯ãå¥å..." onkeydown="if(event.key==='Enter')addTask('pm')">
-          <button class="btn btn-primary btn-sm" onclick="addTask('pm')">è¿½å </button>
+          <input type="text" id="pmTaskInput" placeholder="タスクを入力..." onkeydown="if(event.key==='Enter')addTask('pm')">
+          <button class="btn btn-primary btn-sm" onclick="addTask('pm')">追加</button>
         </div>
         <ul class="task-list" id="pmTaskList"></ul>
       </div>
@@ -596,19 +596,19 @@ body {
 
     <!-- Report Generation -->
     <div class="card">
-      <div class="card-title">æ¥å ±</div>
+      <div class="card-title">日報</div>
       <div class="btn-group" style="margin-bottom: 12px;">
         <button class="btn btn-primary" onclick="generateReport()" id="btnGenReport">
-          â¨ AIã§æ¥å ±çæ
+          ✨ AIで日報生成
         </button>
-        <button class="btn btn-outline btn-sm" onclick="saveReport()">ð¾ ä¿å­</button>
+        <button class="btn btn-outline btn-sm" onclick="saveReport()">💾 保存</button>
       </div>
-      <div class="report-box empty" id="reportPreview">æ¥å ±ãçæããã«ã¯ã¿ã¹ã¯ãå¥åãã¦ãAIã§æ¥å ±çæããã¯ãªãã¯ãã¦ãã ãã</div>
+      <div class="report-box empty" id="reportPreview">日報を生成するにはタスクを入力して「AIで日報生成」をクリックしてください</div>
     </div>
 
     <!-- Carryover -->
     <div class="card" id="carryoverCard" style="display:none;">
-      <div class="card-title">ð ç¹°è¶ã¿ã¹ã¯</div>
+      <div class="card-title">📋 繰越タスク</div>
       <div id="carryoverList"></div>
     </div>
   </div>
@@ -617,16 +617,16 @@ body {
 <!-- Time Edit Modal -->
 <div class="modal-overlay" id="editModal">
   <div class="modal">
-    <h3>æå»æå»ã®ä¿®æ­£</h3>
-    <label>æ¥­åéå§</label>
+    <h3>打刻時刻の修正</h3>
+    <label>業務開始</label>
     <input type="time" id="editStartTime">
-    <label>æ¥­åçµäº</label>
+    <label>業務終了</label>
     <input type="time" id="editEndTime">
-    <label>ä¼æ©æéï¼åï¼</label>
+    <label>休憩時間（分）</label>
     <input type="number" id="editBreakMin" min="0" max="480" value="0">
     <div class="btn-group">
-      <button class="btn btn-outline" onclick="closeEditModal()">ã­ã£ã³ã»ã«</button>
-      <button class="btn btn-primary" onclick="saveEditModal()">ä¿å­</button>
+      <button class="btn btn-outline" onclick="closeEditModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveEditModal()">保存</button>
     </div>
   </div>
 </div>
@@ -638,19 +638,19 @@ body {
 /* =============================================================
    Supabase Configuration
    =============================================================
-   â¼â¼â¼ ããã«ããªãã®Supabaseæå ±ãå¥åãã¦ãã ãã â¼â¼â¼
+   ▼▼▼ ここにあなたのSupabase情報を入力してください ▼▼▼
 
-   â ï¸ ã»ã­ã¥ãªãã£æ³¨æ:
-   - SUPABASE_URL ã¨ SUPABASE_ANON_KEY ã¯ãã­ã³ãã¨ã³ãã«å¬éããã¾ã
-   - anon key ã¯ãå¬éç¨ã­ã¼ããªã®ã§ãRLSï¼Row Level Securityï¼ã§
-     ãã¼ãã«ã¸ã®ã¢ã¯ã»ã¹ãå¶éãã¦ãã ãã
-   - Claude API ã­ã¼ã¯çµ¶å¯¾ã«ããã«æ¸ããªãã§ãã ãã
-     â Supabase Edge Function å´ã§ç®¡çãã¾ã
+   ⚠️ セキュリティ注意:
+   - SUPABASE_URL と SUPABASE_ANON_KEY はフロントエンドに公開されます
+   - anon key は「公開用キー」なので、RLS（Row Level Security）で
+     テーブルへのアクセスを制限してください
+   - Claude API キーは絶対にここに書かないでください
+     → Supabase Edge Function 側で管理します
    ============================================================= */
-const SUPABASE_URL = 'https://btzsktivkviscqvgxyzd.supabase.co';      // ä¾: 'https://xxxxx.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0enNrdGl2a3Zpc2Nxdmd4eXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDIzMjYsImV4cCI6MjA5MTM3ODMyNn0.I5ivZqY6hlPpK4apTPg1T1jCLbRc5BtTOxJeIsl9SK0'; // ä¾: 'eyJhbGciOi...'
+const SUPABASE_URL = 'https://btzsktivkviscqvgxyzd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0enNrdGl2a3Zpc2Nxdmd4eXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDIzMjYsImV4cCI6MjA5MTM3ODMyNn0.I5ivZqY6hlPpK4apTPg1T1jCLbRc5BtTOxJeIsl9SK0';
 
-/* Edge Function URL (æ¥å ±AEçæç¨) */
+/* Edge Function URL (日報AI生成用) */
 const EDGE_FUNCTION_URL = SUPABASE_URL + '/functions/v1/generate-report';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -681,7 +681,7 @@ function formatDate(d) {
   return d.toISOString().split('T')[0];
 }
 function formatDateDisplay(d) {
-  const days = ['æ¥','æ','ç«','æ°´','æ¨','é','å'];
+  const days = ['日','月','火','水','木','金','土'];
   return `${d.getMonth()+1}/${d.getDate()}(${days[d.getDay()]})`;
 }
 function renderDate() {
@@ -720,7 +720,7 @@ async function loadAttendance(dateStr) {
     .maybeSingle();
 
   if (error) {
-    showStatus('å¤æ ãã¼ã¿ã®èª­ã¿è¾¼ã¿ã«å¤±æãã¾ãã', 'error');
+    showStatus('勤怠データの読み込みに失敗しました', 'error');
     return;
   }
 
@@ -787,7 +787,7 @@ function renderAttendance() {
       const breakMin = attendance.break_minutes;
       // We store break as minutes; show as a range if we have specific times
       // For simplicity, show total break minutes
-      breakStartEl.textContent = breakMin + 'å';
+      breakStartEl.textContent = breakMin + '分';
       breakStartEl.classList.remove('empty');
     }
   }
@@ -808,7 +808,7 @@ async function loadReport(dateStr) {
     .maybeSingle();
 
   if (error) {
-    showStatus('æ¥å ±ãã¼ã¿ã®èª­ã¿è¾¼ã¿ã«å¤±æãã¾ãã', 'error');
+    showStatus('日報データの読み込みに失敗しました', 'error');
     return;
   }
 
@@ -847,8 +847,8 @@ function parseTasks(str) {
 
 function buildReportFromSummaries(am, pm) {
   let parts = [];
-  if (am) parts.push('ãååã\n' + am);
-  if (pm) parts.push('ãåå¾ã\n' + pm);
+  if (am) parts.push('【午前】\n' + am);
+  if (pm) parts.push('【午後】\n' + pm);
   return parts.join('\n\n') || '';
 }
 
@@ -889,9 +889,9 @@ async function loadCarryover(dateStr) {
     const div = document.createElement('div');
     div.className = 'task-item';
     div.innerHTML = `
-      <span class="badge">ç¹°è¶</span>
+      <span class="badge">繰越</span>
       <span class="task-text">${escapeHtml(t.text)}</span>
-      <button class="btn btn-sm btn-outline" onclick="addCarryoverTask('${escapeHtml(t.text)}')">è¿½å </button>
+      <button class="btn btn-sm btn-outline" onclick="addCarryoverTask('${escapeHtml(t.text)}')">追加</button>
     `;
     list.appendChild(div);
   });
@@ -901,7 +901,7 @@ function addCarryoverTask(text) {
   amTasks.push({ text, done: false, carryover: true });
   renderTasks();
   debounceSaveReport();
-  showStatus('ç¹°è¶ã¿ã¹ã¯ãè¿½å ãã¾ãã', 'success');
+  showStatus('繰越タスクを追加しました', 'success');
 }
 
 /* =============================================================
@@ -954,7 +954,7 @@ async function clockIn() {
       .select()
       .single();
     if (e2) {
-      showStatus('æå»ã«å¤±æãã¾ãã: ' + e2.message, 'error');
+      showStatus('打刻に失敗しました: ' + e2.message, 'error');
       return;
     }
     attendance = d2;
@@ -963,7 +963,7 @@ async function clockIn() {
   }
 
   renderAttendance();
-  showStatus('æ¥åéå§ãè¨é²ãã¾ãã', 'success');
+  showStatus('業務開始を記録しました', 'success');
 }
 
 async function breakStartFn() {
@@ -974,7 +974,7 @@ async function breakStartFn() {
   document.getElementById('breakStart').classList.remove('empty');
   document.getElementById('btnBreakStart').disabled = true;
   document.getElementById('btnBreakEnd').disabled = false;
-  showStatus('ä¼æ©éå§ãè¨é²ãã¾ãã', 'success');
+  showStatus('休憩開始を記録しました', 'success');
 }
 
 async function breakEndFn() {
@@ -989,7 +989,7 @@ async function breakEndFn() {
   document.getElementById('btnBreakStart').disabled = false;
 
   await saveAttendance();
-  showStatus(`ä¼æ©çµäºï¼${breakMin}åï¼`, 'success');
+  showStatus(`休憩終了（${breakMin}分）`, 'success');
 }
 
 async function clockOut() {
@@ -1006,7 +1006,7 @@ async function clockOut() {
 
   await saveAttendance();
   renderAttendance();
-  showStatus('æ¥­åçµäºãè¨é²ãã¾ãã', 'success');
+  showStatus('業務終了を記録しました', 'success');
 }
 
 async function saveAttendance() {
@@ -1028,8 +1028,8 @@ async function saveAttendance() {
     const { error } = await supabase
       .from('attendance')
       .update(record)
-     ..eq('id', attendance.id);
-    if (error) showStatus('ä¿å­ã«å¤±æãã¾ãã', 'error');
+      .eq('id', attendance.id);
+    if (error) showStatus('保存に失敗しました', 'error');
   } else {
     const { data, error } = await supabase
       .from('attendance')
@@ -1037,7 +1037,7 @@ async function saveAttendance() {
       .select()
       .single();
     if (error) {
-      showStatus('ä¿å­ã«å¤±æãã¾ãã: ' + error.message, 'error');
+      showStatus('保存に失敗しました: ' + error.message, 'error');
     } else {
       attendance = data;
     }
@@ -1060,7 +1060,7 @@ function updateSummary() {
   const actualMin = totalMin - breakMin;
 
   document.getElementById('summaryWorkType').textContent =
-    attendance.work_type === 'kumon' ? 'Kumonã®æ¥' : 'ãã®ä»';
+    attendance.work_type === 'kumon' ? 'Kumonの日' : 'その他';
   document.getElementById('summaryWorkHours').textContent = formatMinutes(totalMin);
   document.getElementById('summaryBreak').textContent = formatMinutes(breakMin);
   document.getElementById('summaryActual').textContent = formatMinutes(actualMin);
@@ -1069,7 +1069,7 @@ function updateSummary() {
 function formatMinutes(min) {
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return `${h}æé${m > 0 ? m + 'å' : ''}`;
+  return `${h}時間${m > 0 ? m + '分' : ''}`;
 }
 
 /* =============================================================
@@ -1129,7 +1129,7 @@ async function saveEditModal() {
   await saveAttendance();
   renderAttendance();
   closeEditModal();
-  showStatus('æå»ãä¿®æ­£ãã¾ãã', 'success');
+  showStatus('時刻を修正しました', 'success');
 }
 
 /* =============================================================
@@ -1178,8 +1178,8 @@ function renderTaskList(period, tasks) {
     li.innerHTML = `
       <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask('${period}', ${i})">
       <span class="task-text ${t.done ? 'done' : ''}">${escapeHtml(t.text)}</span>
-      ${t.carryover ? '<span class="badge">ç¹°è¶</span>' : ''}
-      <button class="delete-btn" onclick="removeTask('${period}', ${i})">Ã</button>
+      ${t.carryover ? '<span class="badge">繰越</span>' : ''}
+      <button class="delete-btn" onclick="removeTask('${period}', ${i})">×</button>
     `;
     list.appendChild(li);
   });
@@ -1198,12 +1198,12 @@ async function generateReport() {
   const incompletePm = pmTasks.filter(t => !t.done).map(t => t.text);
 
   if (completedAm.length === 0 && completedPm.length === 0) {
-    showStatus('å®äºã¿ã¹ã¯ãããã¾ãã', 'error');
+    showStatus('完了タスクがありません', 'error');
     return;
   }
 
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> çæä¸­...';
+  btn.innerHTML = '<span class="spinner"></span> 生成中...';
 
   try {
     const res = await fetch(EDGE_FUNCTION_URL, {
@@ -1229,35 +1229,35 @@ async function generateReport() {
     reportText = result.report || '';
     preview.textContent = reportText;
     preview.classList.remove('empty');
-    showStatus('æ¥å ±ãçæãã¾ãã', 'success');
+    showStatus('日報を生成しました', 'success');
   } catch (e) {
-    showStatus('æ¥å ±çæã«å¤±æãã¾ãã: ' + e.message, 'error');
+    showStatus('日報生成に失敗しました: ' + e.message, 'error');
     // Fallback: generate simple template locally
     reportText = generateLocalReport(completedAm, completedPm, incompleteAm, incompletePm);
     preview.textContent = reportText;
     preview.classList.remove('empty');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'â¨ AIã§æ¥å ±çæ';
+    btn.innerHTML = '✨ AIで日報生成';
   }
 }
 
 function generateLocalReport(cAm, cPm, iAm, iPm) {
-  let report = `ãæ¥å ±ã${formatDateDisplay(currentDate)}\n\n`;
+  let report = `【日報】${formatDateDisplay(currentDate)}\n\n`;
   if (cAm.length > 0) {
-    report += 'â  ååã®å®ç¸¾\n';
-    cAm.forEach(t => report += `ã»${t}\n`);
+    report += '■ 午前の実績\n';
+    cAm.forEach(t => report += `・${t}\n`);
     report += '\n';
   }
   if (cPm.length > 0) {
-    report += 'â  åå¾ã®å®ç¸¾\n';
-    cPm.forEach(t => report += `ã»${t}\n`);
+    report += '■ 午後の実績\n';
+    cPm.forEach(t => report += `・${t}\n`);
     report += '\n';
   }
   const allIncomplete = [...iAm, ...iPm];
   if (allIncomplete.length > 0) {
-    report += 'â  ç¿æ¥ã¸ã®ç¹°è¶\n';
-    allIncomplete.forEach(t => report += `ã»${t}\n`);
+    report += '■ 翌日への繰越\n';
+    allIncomplete.forEach(t => report += `・${t}\n`);
   }
   return report;
 }
@@ -1268,7 +1268,7 @@ function renderReport() {
     preview.textContent = reportText;
     preview.classList.remove('empty');
   } else {
-    preview.textContent = 'æ¥å ±ãçæããã«ã¯ã¿ã¹ã¯ãå¥åãã¦ãAIã§æ¥å ±çæããã¯ãªãã¯ãã¦ãã ãã';
+    preview.textContent = '日報を生成するにはタスクを入力して「AIで日報生成」をクリックしてください';
     preview.classList.add('empty');
   }
 }
@@ -1284,8 +1284,8 @@ async function saveReport() {
   let amSummary = '';
   let pmSummary = '';
   if (reportText) {
-    const parts = reportText.split(/ãåå¾ã/);
-    amSummary = parts[0]?.replace(/ãååã/, '').replace(/ãæ¥å ±ã.*\n\n?/, '').trim() || '';
+    const parts = reportText.split(/【午後】/);
+    amSummary = parts[0]?.replace(/【午前】/, '').replace(/【日報】.*\n\n?/, '').trim() || '';
     pmSummary = parts[1]?.trim() || '';
     // If the split didn't work well, just put everything in am
     if (!pmSummary && !amSummary) {
@@ -1322,9 +1322,9 @@ async function saveReport() {
   }
 
   if (error) {
-    showStatus('æ¥å ±ã®ä¿å­ã«å¤±æãã¾ãã: ' + error.message, 'error');
+    showStatus('日報の保存に失敗しました: ' + error.message, 'error');
   } else {
-    showStatus('æ¥å ±ãä¿å­ãã¾ãã', 'success');
+    showStatus('日報を保存しました', 'success');
   }
 }
 
