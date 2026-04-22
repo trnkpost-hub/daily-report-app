@@ -885,7 +885,7 @@ function timeStr(d) {
 /* ----- Daily Report ----- */
 async function loadReport(dateStr) {
   const { data, error } = await sbClient
-    .from('daily_report')
+    .from('reports')
     .select('*')
     .eq('date', dateStr)
     .maybeSingle();
@@ -942,7 +942,7 @@ async function loadCarryover(dateStr) {
   const prevStr = formatDate(prev);
 
   const { data } = await sbClient
-    .from('daily_report')
+    .from('reports')
     .select('am_tasks, pm_tasks')
     .eq('date', prevStr)
     .maybeSingle();
@@ -1389,7 +1389,7 @@ async function saveReport() {
 
   // Check if record exists
   const { data: existing } = await sbClient
-    .from('daily_report')
+    .from('reports')
     .select('id')
     .eq('date', dateStr)
     .maybeSingle();
@@ -1397,12 +1397,12 @@ async function saveReport() {
   let error;
   if (existing) {
     ({ error } = await sbClient
-      .from('daily_report')
+      .from('reports')
       .update(record)
       .eq('id', existing.id));
   } else {
     ({ error } = await sbClient
-      .from('daily_report')
+      .from('reports')
       .insert(record));
   }
 
