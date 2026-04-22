@@ -697,7 +697,19 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 /* Edge Function URL (日報AI生成用) */
 const EDGE_FUNCTION_URL = SUPABASE_URL + '/functions/v1/generate-report';
 
-const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Create the Supabase client defensively: if the SDK script didn't load
+// (offline, blocked CDN, file:// preview), we still want the rest of the
+// script to parse so DOMContentLoaded fires and the date/UI render.
+let sbClient = null;
+try {
+  if (window.supabase && window.supabase.createClient) {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    console.warn('Supabase SDK not loaded — running in offline/preview mode');
+  }
+} catch (e) {
+  console.warn('Supabase createClient failed:', e);
+}
 
 /* =============================================================
    State
@@ -713,10 +725,17 @@ let saveTimeout = null;
 /* =============================================================
    Initialization
    ============================================================= */
-document.addEventListener('DOMContentLoaded', () => {
+function init() {
   renderDate();
   loadDay();
-});
+}
+// Script is inline at end of body, so the DOM we need is already parsed.
+// Still handle the early-load case defensively.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 
 /* =============================================================
    Date Navigation
@@ -901,7 +920,7 @@ async function loadReport(dateStr) {
   carryoverText = '';
 
   if (data) {
-    const incompleteSet = new Set(parseIncompleteList(data.carryover));
+    const incompleteSet = parseIncompleteList(data.carryover);
     amTasks = parseTasks(data.am_tasks, incompleteSet);
     pmTasks = parseTasks(data.pm_tasks, incompleteSet);
     reportText = buildReportFromSummaries(data.am_summary, data.pm_summary);
@@ -916,17 +935,22 @@ async function loadReport(dateStr) {
 }
 
 function parseIncompleteList(str) {
-  if (!str) return [];
+  // Returns a Set of incomplete task texts if the column is a structured JSON
+  // array. Returns null when the column is empty or free-form prose (legacy
+  // GAS format) — callers must not treat "not in list" as "done" in that case.
+  if (!str) return null;
   try {
     const parsed = JSON.parse(str);
     if (Array.isArray(parsed)) {
-      return parsed
-        .map(item => (typeof item === 'string' ? item : (item && item.text) || ''))
-        .map(s => s.trim())
-        .filter(Boolean);
+      return new Set(
+        parsed
+          .map(item => (typeof item === 'string' ? item : (item && item.text) || ''))
+          .map(s => s.trim())
+          .filter(Boolean)
+      );
     }
   } catch {}
-  return str.split('\n').map(s => s.trim()).filter(Boolean);
+  return null;
 }
 
 function parseTasks(str, incompleteSet) {
@@ -941,9 +965,9 @@ function parseTasks(str, incompleteSet) {
       }));
     }
   } catch {}
-  // Fallback: legacy plaintext format (one task per line).
-  // Done state: explicit [x]/☑ marker if present; otherwise derived from
-  // the day's carryover list (task is done iff not listed as incomplete).
+  // Fallback: legacy plaintext (one task per line). Use the explicit [x]/☑
+  // marker when present; otherwise use the structured incompleteSet if it was
+  // reliably parsed; otherwise default to not done (safer than assuming done).
   return str.split('\n').filter(s => s.trim()).map(s => {
     let line = s.trim();
     let hasExplicit = false;
@@ -983,7 +1007,7 @@ async function loadCarryover(dateStr) {
 
   if (!data) return;
 
-  const prevIncompleteSet = new Set(parseIncompleteList(data.carryover));
+  const prevIncompleteSet = parseIncompleteList(data.carryover);
   const prevAm = parseTasks(data.am_tasks, prevIncompleteSet);
   const prevPm = parseTasks(data.pm_tasks, prevIncompleteSet);
   const incomplete = [...prevAm, ...prevPm].filter(t => !t.done);
