@@ -901,8 +901,9 @@ async function loadReport(dateStr) {
   carryoverText = '';
 
   if (data) {
-    amTasks = parseTasks(data.am_tasks);
-    pmTasks = parseTasks(data.pm_tasks);
+    const incompleteSet = new Set(parseIncompleteList(data.carryover));
+    amTasks = parseTasks(data.am_tasks, incompleteSet);
+    pmTasks = parseTasks(data.pm_tasks, incompleteSet);
     reportText = buildReportFromSummaries(data.am_summary, data.pm_summary);
     carryoverText = data.carryover || '';
   }
@@ -914,18 +915,51 @@ async function loadReport(dateStr) {
   renderReport();
 }
 
-function parseTasks(str) {
+function parseIncompleteList(str) {
   if (!str) return [];
   try {
-    return JSON.parse(str);
-  } catch {
-    // Fallback: treat as newline-separated text
-    return str.split('\n').filter(s => s.trim()).map(s => ({
-      text: s.replace(/^[\-\s\[x\]]+/i, '').trim(),
-      done: /^\[x\]/i.test(s.trim()),
-      carryover: false
-    }));
-  }
+    const parsed = JSON.parse(str);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map(item => (typeof item === 'string' ? item : (item && item.text) || ''))
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
+  } catch {}
+  return str.split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+function parseTasks(str, incompleteSet) {
+  if (!str) return [];
+  try {
+    const parsed = JSON.parse(str);
+    if (Array.isArray(parsed)) {
+      return parsed.map(t => ({
+        text: (t && t.text ? String(t.text) : '').trim(),
+        done: Boolean(t && t.done),
+        carryover: Boolean(t && t.carryover)
+      }));
+    }
+  } catch {}
+  // Fallback: legacy plaintext format (one task per line).
+  // Done state: explicit [x]/☑ marker if present; otherwise derived from
+  // the day's carryover list (task is done iff not listed as incomplete).
+  return str.split('\n').filter(s => s.trim()).map(s => {
+    let line = s.trim();
+    let hasExplicit = false;
+    let explicitDone = false;
+    const m = line.match(/^[\-\s]*(\[[xX]\]|\[\s?\]|[☑☐✓✗✔✘✅⬜■□●○])\s*(.*)$/);
+    if (m) {
+      hasExplicit = true;
+      explicitDone = /[xX☑✓✔✅■●]/.test(m[1]);
+      line = m[2];
+    }
+    const text = line.trim();
+    const done = hasExplicit
+      ? explicitDone
+      : (incompleteSet ? !incompleteSet.has(text) : false);
+    return { text, done, carryover: false };
+  });
 }
 
 function buildReportFromSummaries(am, pm) {
@@ -943,14 +977,15 @@ async function loadCarryover(dateStr) {
 
   const { data } = await sbClient
     .from('reports')
-    .select('am_tasks, pm_tasks')
+    .select('am_tasks, pm_tasks, carryover')
     .eq('date', prevStr)
     .maybeSingle();
 
   if (!data) return;
 
-  const prevAm = parseTasks(data.am_tasks);
-  const prevPm = parseTasks(data.pm_tasks);
+  const prevIncompleteSet = new Set(parseIncompleteList(data.carryover));
+  const prevAm = parseTasks(data.am_tasks, prevIncompleteSet);
+  const prevPm = parseTasks(data.pm_tasks, prevIncompleteSet);
   const incomplete = [...prevAm, ...prevPm].filter(t => !t.done);
 
   if (incomplete.length === 0) {
