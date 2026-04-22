@@ -966,8 +966,9 @@ function parseTasks(str, incompleteSet) {
     }
   } catch {}
   // Fallback: legacy plaintext (one task per line). Use the explicit [x]/☑
-  // marker when present; otherwise use the structured incompleteSet if it was
-  // reliably parsed; otherwise default to not done (safer than assuming done).
+  // marker when present; else use the structured incompleteSet if available;
+  // else assume done (matches the pre-JSON app behavior — the AI-summary
+  // carryover column is prose and can't be parsed as a task list).
   return str.split('\n').filter(s => s.trim()).map(s => {
     let line = s.trim();
     let hasExplicit = false;
@@ -981,7 +982,7 @@ function parseTasks(str, incompleteSet) {
     const text = line.trim();
     const done = hasExplicit
       ? explicitDone
-      : (incompleteSet ? !incompleteSet.has(text) : false);
+      : (incompleteSet ? !incompleteSet.has(text) : true);
     return { text, done, carryover: false };
   });
 }
